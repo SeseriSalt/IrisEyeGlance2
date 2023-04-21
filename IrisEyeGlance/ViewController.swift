@@ -208,39 +208,27 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
             
             
             //左目虹彩径の処理--------------------------------------------------------------------------------------------------------------------------------
-            if(array_leftIris.count < 4){
-                sum_leftIris = 0
-                for i in 0...(array_leftIris.count - 1){
-                    sum_leftIris += array_leftIris[i]
-                }
-                sum_leftIris /= (Float)(array_leftIris.count)
+            if array_leftIris.count < 4 {
+                sum_leftIris = array_leftIris.reduce(0, +) / Float(array_leftIris.count)
                 array_sum_leftIris.append(sum_leftIris)
-                //4以上の時の処理
-            }else{
-                //まずはLPFの処理
-                if (abs(array_leftIris[array_leftIris.count - 2] - leftIrisSize) > 1 || abs(array_leftIris[array_leftIris.count - 3] - leftIrisSize) > 1){
-                    sum_leftIris =  array_sum_leftIris[array_sum_leftIris.count - 2]
-                    //値が普通の時のLPF処理
-                }else{
-                    sum_leftIris =  0.90 * (array_sum_leftIris[array_sum_leftIris.count - 1]) + 0.10 * leftIrisSize
+            } else {
+                // LPFの処理
+                let isLargestDeviation = abs(array_leftIris[array_leftIris.count - 2] - leftIrisSize) > 1 || abs(array_leftIris[array_leftIris.count - 3] - leftIrisSize) > 1
+                if isLargestDeviation {
+                    sum_leftIris = array_sum_leftIris[array_sum_leftIris.count - 2]
+                } else {
+                    sum_leftIris = 0.90 * array_sum_leftIris.last! + 0.10 * leftIrisSize
                 }
-                //30ごとに平均を取る
-                if(array_leftIris.count > 29){
-                    ave_leftIris = 0
-                    for i in array_leftIris.count - 30...array_leftIris.count - 1{
-                        ave_leftIris += array_leftIris[i]
-                    }
-                    ave_leftIris /= 30
-                    //平均と乖離していた場合には補正
-                    if (abs(array_sum_leftIris[array_sum_leftIris.count - 1] - ave_leftIris) > 2.0){
-                        //直近５つの平均で補正
-                        ave_leftIris = 0
-                        for i in array_leftIris.count - 5...array_leftIris.count - 1{
-                            ave_leftIris += array_leftIris[i]
-                        }
-                        ave_leftIris /= 5
-                        
-                        sum_leftIris = ave_leftIris
+                // 30ごとに平均を取る
+                if array_leftIris.count > 29 {
+                    let last30Array_leftIris = array_leftIris[(array_leftIris.count-30)...(array_leftIris.count-1)]
+                    let ave_last30_leftIris = last30Array_leftIris.reduce(0, +) / Float(last30Array_leftIris.count)
+                    // 平均と乖離していた場合には補正
+                    if (abs(array_sum_leftIris.last! - ave_last30_leftIris) > 2.0) {
+                        // 直近５つの平均で補正
+                        let last5Array_leftIris = array_leftIris[(array_leftIris.count-5)...(array_leftIris.count-1)]
+                        let ave_last5_leftIris = last5Array_leftIris.reduce(0, +) / Float(last5Array_leftIris.count)
+                        sum_leftIris = ave_last5_leftIris
                     }
                 }
                 array_sum_leftIris.append(sum_leftIris)
