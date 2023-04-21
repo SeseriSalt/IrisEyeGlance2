@@ -233,6 +233,11 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
                 }
                 array_sum_leftIris.append(sum_leftIris)
             }
+
+
+
+
+            
             
             //右目虹彩径の処理-------------------------------------------------------------------------------------------------------------------------------
             if(array_rightIris.count < 4){
